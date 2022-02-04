@@ -11,7 +11,7 @@ REACT_APP_RECAPTCHA_V2_PUBLIC=6Lc2koEdAAAAAIdNcMY0V1E9IPGT3AxX-vlRUDtQ
 
 `npm start`
 
-IMPORTANT!
+IMPORTANT!!
 
 make sure you access from `127.0.0.1` and not `localhost`
 
