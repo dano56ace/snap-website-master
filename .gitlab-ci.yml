@@ -1,0 +1,50 @@
+stages:
+  - generate-stage
+  - execute-stage
+  - deploy
+
+generate-stage:
+  stage: generate-stage
+  only:
+    - /^feature\/.*\/master$/
+  tags:
+    - snap-runner-3
+  script:
+    - chmod +x ./generate-enviroments.sh
+    - ./generate-enviroments.sh stage STAGE
+  artifacts:
+    paths:
+      - generated-gitlab-ci-stage.yml
+
+execute-stage:
+  stage: execute-stage
+  only:
+    - /^feature\/.*\/master$/
+  needs:
+    - generate-stage
+  trigger:
+    include:
+      - artifact: generated-gitlab-ci-stage.yml
+        job: generate-stage
+    strategy: depend
+
+deploy:
+  stage: deploy
+  only:
+    - master
+  tags:
+    - snap-runner-3
+  script:
+    - rm -rf /home/gitlab-runner/snap-website-deploy-temp
+    - cd /home/gitlab-runner
+    - git clone git@gitlab.worldce.info:snap/snap-website.git snap-website-deploy-temp
+    - cd /home/gitlab-runner/snap-website-deploy-temp
+    - git checkout master
+    - git pull
+    - (printenv | grep DEPLOY_FRONT_ | sed -e "s/^DEPLOY_FRONT_//"  ) > .env
+    - mkdir -p dist
+    - cp -R svg dist/svg
+    - npm install
+    - npm run-script build
+    - rm -rf /home/gitlab-runner/snap-website-deploy
+    - mv /home/gitlab-runner/snap-website-deploy-temp /home/gitlab-runner/snap-website-deploy
